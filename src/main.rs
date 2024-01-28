@@ -27,7 +27,7 @@ fn update_screen_quad(
 ) {
     match meshes.get_mut(&screen_quad.mesh_handle) {
         None => {
-            let window: Mut<'_, Window> = windows.single_mut();
+            let window = windows.single_mut();
             let mut mesh = Mesh::from(shape::Quad::new(Vec2::new(
                 window.resolution.width(),
                 window.resolution.height(),
@@ -49,7 +49,7 @@ fn update_screen_quad(
             });
         }
         Some(mesh) if !events.is_empty() => {
-            let window: Mut<'_, Window> = windows.single_mut();
+            let window = windows.single_mut();
             let mut new_mesh = Mesh::from(shape::Quad::new(Vec2::new(
                 window.resolution.width(),
                 window.resolution.height(),
