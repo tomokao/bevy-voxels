@@ -1,13 +1,16 @@
 use bevy::{
     prelude::*,
-    render::mesh::VertexAttributeValues,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+    render::render_resource::{AsBindGroup, ShaderRef},
+    sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle},
     window::WindowResized,
 };
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((
+            DefaultPlugins,
+            Material2dPlugin::<ScreenQuadMaterial>::default(),
+        ))
         .add_systems(Update, update_screen_quad)
         .run();
 }
@@ -22,29 +25,22 @@ fn update_screen_quad(
     mut meshes: ResMut<Assets<Mesh>>,
     mut screen_quad: Local<ScreenQuad>,
     mut windows: Query<&mut Window>,
-    mut color_materials: ResMut<Assets<ColorMaterial>>,
-    mut events: EventReader<WindowResized>,
+    mut materials: ResMut<Assets<ScreenQuadMaterial>>,
+    events: EventReader<WindowResized>,
 ) {
     match meshes.get_mut(&screen_quad.mesh_handle) {
         None => {
             let window = windows.single_mut();
-            let mut mesh = Mesh::from(shape::Quad::new(Vec2::new(
+            let mesh = Mesh::from(shape::Quad::new(Vec2::new(
                 window.resolution.width(),
                 window.resolution.height(),
             )));
-            let vertex_colors = vec![
-                Color::RED.as_rgba_f32(),
-                Color::GREEN.as_rgba_f32(),
-                Color::BLUE.as_rgba_f32(),
-                Color::WHITE.as_rgba_f32(),
-            ];
-            mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, vertex_colors);
             let mesh_handle = meshes.add(mesh);
             screen_quad.mesh_handle = mesh_handle.clone();
             commands.spawn(Camera2dBundle::default());
             commands.spawn(MaterialMesh2dBundle {
                 mesh: mesh_handle.into(),
-                material: color_materials.add(ColorMaterial::default()),
+                material: materials.add(ScreenQuadMaterial {}),
                 ..default()
             });
         }
@@ -60,5 +56,14 @@ fn update_screen_quad(
             );
         }
         _ => {}
+    }
+}
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+struct ScreenQuadMaterial {}
+
+impl Material2d for ScreenQuadMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/screen_quad.wgsl".into()
     }
 }
