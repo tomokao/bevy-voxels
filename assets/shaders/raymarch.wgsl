@@ -32,7 +32,7 @@ fn pseudo_3d_noise(pos: vec3f) -> f32 {
 }
 
 fn is_hit(pos: vec3i) -> bool {
-    return pseudo_3d_noise(vec3f(pos) / 30.0) > 0.0;
+    return pseudo_3d_noise(vec3f(pos) / 30.0) > 0.3;
     //return distance(vec3f(pos), vec3f()) < 5.0;
 }
 
@@ -45,7 +45,7 @@ fn march(start_pos: vec3f, direction: vec3f, max_distance: f32) -> vec4f {
     var marched = 0.0;
     while marched <= max_distance {
         let pos = start_pos + direction * marched;
-        let pos_i = vec3i(pos);
+        let pos_i = vec3i(floor(pos));
         if is_hit(pos_i) {
             let color = vec3f(1.0, 1.0, 1.0);
             //return vec4f((max_distance - marched) / max_distance * color, 1.0);
@@ -64,5 +64,5 @@ fn fragment(mesh: VertexOutput) -> @location(0) vec4f {
     uv.x = -uv.x;
     let direction = normalize(vec3f(uv, 1.0));
 
-    return march(-pos, apply_rotation(direction), 200.0);
+    return march(-pos, apply_rotation(direction), 500.0);
 }
